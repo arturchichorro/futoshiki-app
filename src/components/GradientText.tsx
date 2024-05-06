@@ -18,7 +18,6 @@ const GradientText: React.FC<GradientTextProps> = ({
             maskElement={
                 <View
                     style={{
-
                         backgroundColor: 'transparent',
                         flex: 1,
                         justifyContent: 'center',

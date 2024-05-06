@@ -1,6 +1,9 @@
+import { router } from 'expo-router';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import GradientText from '../components/GradientText';
+import GradientButton from '../components/GradientButton';
+import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
 export default function HomeScreen() {
     return (
@@ -11,7 +14,20 @@ export default function HomeScreen() {
                 locations={[0, 0.35, 0.85]}
                 style={styles.backgroundGradient}
             />
-            <GradientText style={styles.text}>FUTOSHIKI</GradientText>
+
+            <View style={styles.uiContainer}>
+                <GradientText style={styles.titleText}>FUTOSHIKI</GradientText>
+                <Pressable onPress={() => {
+                    router.navigate('/game');
+                }}>
+                    <GradientButton
+                        textStyle={styles.buttonText}
+                        containerStyle={styles.button}
+                    >
+                        New Game
+                    </GradientButton>
+                </Pressable>
+            </View>
 
         </View>
     );
@@ -20,9 +36,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     backgroundGradient: {
         position: 'absolute',
@@ -31,8 +44,27 @@ const styles = StyleSheet.create({
         top: 0,
         height: '100%',
     },
-    text: {
-        fontSize: 50,
+    uiContainer: {
+        flex: 1,
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    titleText: {
+        fontSize: 65,
         fontFamily: 'JetBrainsMonoExtraBold',
     },
+    button: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: moderateScale(30),
+        height: verticalScale(40),
+        width: scale(150),
+        bottom: verticalScale(100),
+    },
+    buttonText: {
+        color: 'white',
+        fontFamily: 'JetBrainsMonoBold',
+        fontSize: 25,
+    }
 });
