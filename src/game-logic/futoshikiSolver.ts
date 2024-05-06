@@ -24,6 +24,7 @@ const exampleFutoshiki: Futoshiki = {
     ]
 }
 
+// level 7 6x6
 const sevenFutoshiki: Futoshiki = {
     state: [
         [0, 1, 0, 0, 4, 0],
@@ -92,6 +93,8 @@ function isValidPlacement(state: number[][], ineq: number[][][], col: number, ro
             return false;
         }
     }
+
+
     // Check rows
     for (let rowIdx = 0; rowIdx < n; rowIdx++) {
         if (rowIdx === row) {
@@ -110,11 +113,11 @@ function isValidPlacement(state: number[][], ineq: number[][][], col: number, ro
 
             if (col === ineqCol && row === ineqRow) {
                 if (j % 2 === 0) {
-                    if (value <= state[ineq[i][1][0]][ineq[i][1][1]]) {
+                    if (value <= state[ineq[i][1][0]][ineq[i][1][1]] && state[ineq[i][1][0]][ineq[i][1][1]] !== 0) {
                         return false;
                     }
                 } else {
-                    if (value >= state[ineq[i][0][0]][ineq[i][0][1]]) {
+                    if (value >= state[ineq[i][0][0]][ineq[i][0][1]] && state[ineq[i][0][0]][ineq[i][0][1]] !== 0) {
                         return false;
                     }
                 }
@@ -163,7 +166,12 @@ function solveFutoshiki(problem: Futoshiki, solutions: number[][][] = []): numbe
     }
 }
 
+
+const startTime = performance.now(); // Record start time
 console.log(solveFutoshiki(sevenFutoshiki));
+const endTime = performance.now(); // Record end time
+const executionTime = endTime - startTime; // Calculate execution time
+console.log(`Execution time: ${executionTime} milliseconds`);
 
 
 

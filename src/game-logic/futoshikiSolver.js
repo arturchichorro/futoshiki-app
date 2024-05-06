@@ -20,6 +20,7 @@ var exampleFutoshiki = {
         [[1, 3], [2, 3]],
     ]
 };
+// level 7 6x6
 var sevenFutoshiki = {
     state: [
         [0, 1, 0, 0, 4, 0],
@@ -97,12 +98,12 @@ function isValidPlacement(state, ineq, col, row, value) {
             var ineqRow = ineq[i][j][1];
             if (col === ineqCol && row === ineqRow) {
                 if (j % 2 === 0) {
-                    if (value <= state[ineq[i][1][0]][ineq[i][1][1]]) {
+                    if (value <= state[ineq[i][1][0]][ineq[i][1][1]] && state[ineq[i][1][0]][ineq[i][1][1]] !== 0) {
                         return false;
                     }
                 }
                 else {
-                    if (value >= state[ineq[i][0][0]][ineq[i][0][1]]) {
+                    if (value >= state[ineq[i][0][0]][ineq[i][0][1]] && state[ineq[i][0][0]][ineq[i][0][1]] !== 0) {
                         return false;
                     }
                 }
@@ -144,4 +145,8 @@ function solveFutoshiki(problem, solutions) {
         return solutions;
     }
 }
+var startTime = performance.now(); // Record start time
 console.log(solveFutoshiki(sevenFutoshiki));
+var endTime = performance.now(); // Record end time
+var executionTime = endTime - startTime; // Calculate execution time
+console.log("Execution time: ".concat(executionTime, " milliseconds"));
