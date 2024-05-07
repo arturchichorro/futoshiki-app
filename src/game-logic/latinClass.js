@@ -80,4 +80,4 @@ var Latin = /** @class */ (function () {
     };
     return Latin;
 }());
-new Latin(4);
+new Latin(5);

@@ -39,23 +39,57 @@ var sevenFutoshiki = {
         [[5, 1], [5, 2]],
     ]
 };
-// // 9x9 takes too much work to type the ineqs
-// const biggerFutoshiki: Futoshiki = {
-//     state: [
-//         [0, 8, 6, 0, 0, 0, 2, 7, 0],
-//         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         [0, 2, 0, 0, 0, 0, 0, 3, 0],
-//         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         [0, 1, 0, 0, 0, 0, 0, 8, 0],
-//         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-//         [0, 9, 8, 0, 0, 0, 3, 1, 0]
-//     ],
-//     ineq: [
-//         [[]]
-//     ]
-// }
+// 9x9 takes too much work to type the ineqs
+var biggerFutoshiki = {
+    state: [
+        [0, 8, 6, 0, 0, 0, 2, 7, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 2, 0, 0, 0, 0, 0, 3, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0, 8, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 3, 1, 0]
+    ],
+    ineq: [
+        [[1, 0], [0, 0]],
+        [[1, 8], [0, 8]],
+        [[1, 0], [2, 0]],
+        [[1, 2], [2, 2]],
+        [[1, 3], [1, 2]],
+        [[1, 4], [1, 3]],
+        [[1, 5], [1, 4]],
+        [[1, 7], [2, 7]],
+        [[1, 8], [2, 8]],
+        [[2, 5], [2, 6]],
+        [[2, 7], [2, 6]],
+        [[3, 0], [3, 1]],
+        [[3, 3], [3, 4]],
+        [[3, 5], [4, 5]],
+        [[3, 6], [4, 6]],
+        [[3, 8], [4, 8]],
+        [[4, 3], [3, 3]],
+        [[4, 5], [4, 4]],
+        [[4, 7], [3, 7]],
+        [[4, 8], [4, 7]],
+        [[4, 8], [5, 8]],
+        [[5, 3], [5, 2]],
+        [[5, 4], [5, 3]],
+        [[5, 5], [5, 4]],
+        [[6, 0], [6, 1]],
+        [[6, 1], [7, 1]],
+        [[6, 2], [6, 1]],
+        [[6, 4], [7, 4]],
+        [[6, 5], [6, 4]],
+        [[6, 6], [6, 5]],
+        [[6, 7], [6, 8]],
+        [[7, 0], [7, 1]],
+        [[7, 3], [7, 2]],
+        [[7, 6], [6, 6]],
+        [[7, 6], [7, 7]],
+    ]
+};
 // Checks if all elements of the grid are filled (0 is equivalent to not being filled)
 function isFutoshikiComplete(state) {
     var n = state[0].length;
@@ -73,22 +107,13 @@ function isFutoshikiComplete(state) {
 // Verifies whether a certain number can be placed in a certain coordinate
 function isValidPlacement(state, ineq, col, row, value) {
     var n = state[0].length;
-    // Check columns
-    for (var colIdx = 0; colIdx < n; colIdx++) {
-        if (colIdx === col) {
-            continue;
+    // Check columns and rows
+    for (var i = 0; i < n; i++) {
+        if (state[col][i] === value && i !== row) {
+            return false; // check columns
         }
-        if (state[colIdx][row] === value) {
-            return false;
-        }
-    }
-    // Check rows
-    for (var rowIdx = 0; rowIdx < n; rowIdx++) {
-        if (rowIdx === row) {
-            continue;
-        }
-        if (state[col][rowIdx] === value) {
-            return false;
+        if (state[i][row] === value && i !== col) {
+            return false; // check rows
         }
     }
     // Check inequalities
@@ -111,6 +136,25 @@ function isValidPlacement(state, ineq, col, row, value) {
         }
     }
     return true;
+}
+function possibleValuesForCell(state, col, row) {
+    var n = state[0].length;
+    var set = new Set();
+    for (var i = 0; i < n; i++) {
+        if (i !== col && state[i][row] !== 0) {
+            set.add(state[i][row]); // check columns
+        }
+        if (i !== row && state[col][i] !== 0) {
+            set.add(state[col][i]); // check rows
+        }
+    }
+    var possibleValues = [];
+    for (var i = 1; i <= n; i++) {
+        if (!set.has(i)) {
+            possibleValues.push(i);
+        }
+    }
+    return possibleValues;
 }
 function chooseNextEmptyCell(state) {
     var n = state[0].length;
@@ -135,18 +179,29 @@ function solveFutoshiki(problem, solutions) {
         if (cell.length === 0) {
             return solutions;
         }
-        for (var i = 1; i < problem.state[0].length + 1; i++) {
-            if (isValidPlacement(problem.state, problem.ineq, cell[0], cell[1], i)) {
+        // console.log(possibleValuesForCell(problem.state, cell[0], cell[1]))
+        for (var _i = 0, _a = possibleValuesForCell(problem.state, cell[0], cell[1]); _i < _a.length; _i++) {
+            var value = _a[_i];
+            if (isValidPlacement(problem.state, problem.ineq, cell[0], cell[1], value)) {
                 var newState = __spreadArray([], problem.state.map(function (row) { return __spreadArray([], row, true); }), true); // Create a deep copy
-                newState[cell[0]][cell[1]] = i;
+                newState[cell[0]][cell[1]] = value;
                 solveFutoshiki({ state: newState, ineq: problem.ineq }, solutions);
+                console.log("New iteration: \n");
+                console.log(newState);
             }
         }
+        // for (let i = 1; i < problem.state[0].length + 1; i++) {
+        //     if (isValidPlacement(problem.state, problem.ineq, cell[0], cell[1], i)) {
+        //         let newState = [...problem.state.map(row => [...row])]; // Create a deep copy
+        //         newState[cell[0]][cell[1]] = i;
+        //         solveFutoshiki({ state: newState, ineq: problem.ineq }, solutions);
+        //     }
+        // }
         return solutions;
     }
 }
 var startTime = performance.now(); // Record start time
-console.log(solveFutoshiki(sevenFutoshiki));
+console.log(solveFutoshiki(biggerFutoshiki));
 var endTime = performance.now(); // Record end time
 var executionTime = endTime - startTime; // Calculate execution time
 console.log("Execution time: ".concat(executionTime, " milliseconds"));
