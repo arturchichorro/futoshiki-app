@@ -218,7 +218,7 @@ function solveFutoshiki(problem: Futoshiki, solutions: number[][][] = []): numbe
 
 
 const startTime = performance.now(); // Record start time
-console.log(solveFutoshiki(biggerFutoshiki));
+console.log(solveFutoshiki(sevenFutoshiki));
 const endTime = performance.now(); // Record end time
 const executionTime = endTime - startTime; // Calculate execution time
 console.log(`Execution time: ${executionTime} milliseconds`);

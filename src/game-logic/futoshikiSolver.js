@@ -186,22 +186,13 @@ function solveFutoshiki(problem, solutions) {
                 var newState = __spreadArray([], problem.state.map(function (row) { return __spreadArray([], row, true); }), true); // Create a deep copy
                 newState[cell[0]][cell[1]] = value;
                 solveFutoshiki({ state: newState, ineq: problem.ineq }, solutions);
-                console.log("New iteration: \n");
-                console.log(newState);
             }
         }
-        // for (let i = 1; i < problem.state[0].length + 1; i++) {
-        //     if (isValidPlacement(problem.state, problem.ineq, cell[0], cell[1], i)) {
-        //         let newState = [...problem.state.map(row => [...row])]; // Create a deep copy
-        //         newState[cell[0]][cell[1]] = i;
-        //         solveFutoshiki({ state: newState, ineq: problem.ineq }, solutions);
-        //     }
-        // }
         return solutions;
     }
 }
 var startTime = performance.now(); // Record start time
-console.log(solveFutoshiki(biggerFutoshiki));
+console.log(solveFutoshiki(sevenFutoshiki));
 var endTime = performance.now(); // Record end time
 var executionTime = endTime - startTime; // Calculate execution time
 console.log("Execution time: ".concat(executionTime, " milliseconds"));
