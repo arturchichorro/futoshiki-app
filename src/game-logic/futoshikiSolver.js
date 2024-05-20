@@ -1,198 +1,222 @@
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
+var size = 4;
+function indexFromChoice(row, column, digit) {
+    return (Math.pow(size, 2)) * row + size * column + digit;
+}
+function choiceFromIndex(i) {
+    return [Math.floor(i / (Math.pow(size, 2))), Math.floor(i / size) % size, i % size];
+}
+var hint = function (row, column, digit) { return indexFromChoice(row - 1, column - 1, digit - 1); };
+function cellConstraint(row, column) {
+    var constraints = [];
+    for (var digit = 0; digit < size; digit++) {
+        constraints.push(indexFromChoice(row, column, digit));
+    }
+    return constraints;
+}
+function rowConstraint(row, digit) {
+    var constraints = [];
+    for (var column = 0; column < size; column++) {
+        constraints.push(indexFromChoice(row, column, digit));
+    }
+    return constraints;
+}
+function columnConstraint(column, digit) {
+    var constraints = [];
+    for (var row = 0; row < size; row++) {
+        constraints.push(indexFromChoice(row, column, digit));
+    }
+    return constraints;
+}
+// Futoshiki specific
+// Cada desigualdes vai criar mais do que uma coluna de constraints. Vai criar n-1 colunas
+function ineqConstraint(greater, smaller) {
+    var ineqConstraints = [];
+    for (var d = size - 1; d > 0; d--) {
+        var constraints = [];
+        constraints.push(indexFromChoice(greater.row, greater.column, d));
+        for (var nd = d; nd < size; nd++) {
+            constraints.push(indexFromChoice(smaller.row, smaller.column, nd));
+        }
+        ineqConstraints.push(constraints);
+    }
+    return ineqConstraints;
+}
+// Para sudoku:
+// function boxConstraint(row: number, column: number, digit: number): number[] {
+//     let constraints: number[] = [];
+//     for (let i = 0; i < 3; i++) {
+//         for (let j = 0; j < 3; j++) {
+//             constraints.push(indexFromChoice(row + i, column + j, digit));
+//         }
+//     }
+//     return constraints;
+// }
+// TODO: function inequalityConstraints(?): number[] {}
+function generateConstraints() {
+    var constraints = [];
+    for (var r = 0; r < size; r++) {
+        for (var c = 0; c < size; c++) {
+            constraints.push(cellConstraint(r, c));
+        }
+        for (var d = 0; d < size; d++) {
+            constraints.push(rowConstraint(r, d));
         }
     }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-// level 11 4x4
-var exampleFutoshiki = {
-    state: [
-        [0, 0, 0, 0],
-        [0, 0, 0, 2],
-        [2, 0, 0, 0],
-        [0, 0, 0, 4]
-    ],
-    ineq: [
-        [[0, 2], [0, 3]],
-        [[1, 3], [2, 3]],
-    ]
-};
-// level 7 6x6
-var sevenFutoshiki = {
-    state: [
-        [0, 1, 0, 0, 4, 0],
-        [0, 0, 0, 0, 0, 0],
-        [0, 5, 4, 1, 2, 0],
-        [0, 6, 3, 4, 5, 0],
-        [0, 0, 0, 0, 0, 0],
-        [0, 2, 0, 0, 6, 0]
-    ],
-    ineq: [
-        [[1, 0], [0, 0]],
-        [[0, 4], [0, 3]],
-        [[1, 5], [0, 5]],
-        [[2, 0], [2, 1]],
-        [[3, 2], [4, 2]],
-        [[5, 1], [5, 2]],
-    ]
-};
-// 9x9 takes too much work to type the ineqs
-var biggerFutoshiki = {
-    state: [
-        [0, 8, 6, 0, 0, 0, 2, 7, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 2, 0, 0, 0, 0, 0, 3, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0, 8, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 9, 8, 0, 0, 0, 3, 1, 0]
-    ],
-    ineq: [
-        [[1, 0], [0, 0]],
-        [[1, 8], [0, 8]],
-        [[1, 0], [2, 0]],
-        [[1, 2], [2, 2]],
-        [[1, 3], [1, 2]],
-        [[1, 4], [1, 3]],
-        [[1, 5], [1, 4]],
-        [[1, 7], [2, 7]],
-        [[1, 8], [2, 8]],
-        [[2, 5], [2, 6]],
-        [[2, 7], [2, 6]],
-        [[3, 0], [3, 1]],
-        [[3, 3], [3, 4]],
-        [[3, 5], [4, 5]],
-        [[3, 6], [4, 6]],
-        [[3, 8], [4, 8]],
-        [[4, 3], [3, 3]],
-        [[4, 5], [4, 4]],
-        [[4, 7], [3, 7]],
-        [[4, 8], [4, 7]],
-        [[4, 8], [5, 8]],
-        [[5, 3], [5, 2]],
-        [[5, 4], [5, 3]],
-        [[5, 5], [5, 4]],
-        [[6, 0], [6, 1]],
-        [[6, 1], [7, 1]],
-        [[6, 2], [6, 1]],
-        [[6, 4], [7, 4]],
-        [[6, 5], [6, 4]],
-        [[6, 6], [6, 5]],
-        [[6, 7], [6, 8]],
-        [[7, 0], [7, 1]],
-        [[7, 3], [7, 2]],
-        [[7, 6], [6, 6]],
-        [[7, 6], [7, 7]],
-    ]
-};
-// Checks if all elements of the grid are filled (0 is equivalent to not being filled)
-function isFutoshikiComplete(state) {
-    var n = state[0].length;
-    var result = true;
-    outerLoop: for (var col = 0; col < n; col++) {
-        for (var row = 0; row < n; row++) {
-            if (state[col][row] === 0) {
-                result = false;
-                break outerLoop;
-            }
+    for (var c = 0; c < size; c++) {
+        for (var d = 0; d < size; d++) {
+            constraints.push(columnConstraint(c, d));
+        }
+    }
+    console.log(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
+    console.log(ineqConstraint({ row: 2, column: 2 }, { row: 1, column: 2 }));
+    constraints.concat(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
+    constraints.concat(ineqConstraint({ row: 3, column: 3 }, { row: 2, column: 3 }));
+    // TODO: inequality constraints
+    // Para sudoku:
+    // for (let i = 0; i < 3; i++) {
+    //     for (let j = 0; j < 3; j++) {
+    //         for (let d = 0; d < 9; d++) {
+    //             constraints.push(boxConstraint(i * 3, j * 3, d));
+    //         }
+    //     }
+    // }
+    return constraints;
+}
+function constraintDifficulty(relation, constraint) {
+    var acc = 0;
+    for (var _i = 0, _a = Object.values(relation); _i < _a.length; _i++) {
+        var value = _a[_i];
+        acc += value[constraint];
+    }
+    return acc;
+}
+function stripChoice(choice, constraints) {
+    var result = {};
+    for (var key in choice) {
+        if (!constraints.includes(Number(key))) {
+            result[Number(key)] = choice[key];
         }
     }
     return result;
 }
-// Verifies whether a certain number can be placed in a certain coordinate
-function isValidPlacement(state, ineq, col, row, value) {
-    var n = state[0].length;
-    // Check columns and rows
-    for (var i = 0; i < n; i++) {
-        if (state[col][i] === value && i !== row) {
-            return false; // check columns
-        }
-        if (state[i][row] === value && i !== col) {
-            return false; // check rows
+function makeChoice(relation, choice) {
+    var constraints = [];
+    for (var _i = 0, _a = Object.entries(relation[choice]); _i < _a.length; _i++) {
+        var _b = _a[_i], key = _b[0], value = _b[1];
+        if (value === 1) {
+            constraints.push(Number(key));
         }
     }
-    // Check inequalities
-    for (var i = 0; i < ineq.length; i++) {
-        for (var j = 0; j < 2; j++) {
-            var ineqCol = ineq[i][j][0];
-            var ineqRow = ineq[i][j][1];
-            if (col === ineqCol && row === ineqRow) {
-                if (j % 2 === 0) {
-                    if (value <= state[ineq[i][1][0]][ineq[i][1][1]] && state[ineq[i][1][0]][ineq[i][1][1]] !== 0) {
-                        return false;
-                    }
-                }
-                else {
-                    if (value >= state[ineq[i][0][0]][ineq[i][0][1]] && state[ineq[i][0][0]][ineq[i][0][1]] !== 0) {
-                        return false;
-                    }
-                }
+    var choices = [];
+    for (var _c = 0, constraints_1 = constraints; _c < constraints_1.length; _c++) {
+        var c = constraints_1[_c];
+        for (var _d = 0, _e = Object.keys(relation); _d < _e.length; _d++) {
+            var key = _e[_d];
+            if (!(choices.includes(Number(key))) && relation[Number(key)][c] === 1) {
+                choices.push(Number(key));
             }
         }
     }
-    return true;
-}
-function possibleValuesForCell(state, col, row) {
-    var n = state[0].length;
-    var set = new Set();
-    for (var i = 0; i < n; i++) {
-        if (i !== col && state[i][row] !== 0) {
-            set.add(state[i][row]); // check columns
-        }
-        if (i !== row && state[col][i] !== 0) {
-            set.add(state[col][i]); // check rows
+    var result = {};
+    for (var _f = 0, _g = Object.entries(relation); _f < _g.length; _f++) {
+        var _h = _g[_f], key = _h[0], value = _h[1];
+        if (!choices.includes(Number(key))) {
+            result[Number(key)] = stripChoice(value, constraints);
         }
     }
-    var possibleValues = [];
-    for (var i = 1; i <= n; i++) {
-        if (!set.has(i)) {
-            possibleValues.push(i);
+    return result;
+}
+function algoXImpl(relation, acc, depth) {
+    if (Object.keys(relation).length === 0) {
+        return acc;
+    }
+    var easiestConstraint;
+    for (var _i = 0, _a = Object.keys(relation); _i < _a.length; _i++) {
+        var i = _a[_i];
+        for (var _b = 0, _c = Object.keys(relation[Number(i)]); _b < _c.length; _b++) {
+            var j = _c[_b];
+            easiestConstraint = Number(j);
+            break;
+        }
+        if (easiestConstraint !== undefined) {
+            break;
         }
     }
-    return possibleValues;
-}
-function chooseNextEmptyCell(state) {
-    var n = state[0].length;
-    for (var col = 0; col < n; col++) {
-        for (var row = 0; row < n; row++) {
-            if (state[col][row] === 0) {
-                return [col, row];
+    if (easiestConstraint === undefined) {
+        return undefined;
+    }
+    var difficulty = constraintDifficulty(relation, easiestConstraint);
+    for (var _d = 0, _e = Object.keys(relation); _d < _e.length; _d++) {
+        var k = _e[_d];
+        for (var _f = 0, _g = Object.entries(relation[Number(k)]); _f < _g.length; _f++) {
+            var _h = _g[_f], constraint = _h[0], _ = _h[1];
+            if (constraintDifficulty(relation, Number(constraint)) < difficulty) {
+                easiestConstraint = Number(constraint);
+                difficulty = constraintDifficulty(relation, Number(constraint));
             }
         }
+        break;
     }
-    return [];
+    console.log("depth ".concat(depth, ", Difficulty ").concat(difficulty));
+    if (difficulty === 0) {
+        console.log("");
+        return undefined;
+    }
+    var choices = [];
+    for (var _j = 0, _k = Object.entries(relation); _j < _k.length; _j++) {
+        var _l = _k[_j], choice = _l[0], value = _l[1];
+        if (value[easiestConstraint] === 1) {
+            choices.push(Number(choice));
+        }
+    }
+    for (var _m = 0, choices_1 = choices; _m < choices_1.length; _m++) {
+        var c = choices_1[_m];
+        var rel = makeChoice(relation, c);
+        var new_acc = acc.slice();
+        new_acc.push(c);
+        var result = algoXImpl(rel, new_acc, depth + 1);
+        if (result) {
+            return result;
+        }
+    }
+    ;
+    return undefined;
 }
-function solveFutoshiki(problem, solutions) {
-    // TODO: Adicionar check para ver se initial state é possível
-    if (solutions === void 0) { solutions = []; }
-    if (isFutoshikiComplete(problem.state)) {
-        solutions.push(problem.state);
-        return solutions;
+function algoX(relation) {
+    return algoXImpl(relation, [], 1);
+}
+function solve() {
+    var constraints = generateConstraints();
+    var relation = {};
+    for (var i = 0; i < Math.pow(size, 3); i++) {
+        relation[i] = {};
+        for (var j = 0; j < constraints.length; j++) {
+            relation[i][j] = 0;
+        }
+    }
+    constraints.forEach(function (constraint, i) {
+        for (var _i = 0, constraint_1 = constraint; _i < constraint_1.length; _i++) {
+            var c = constraint_1[_i];
+            relation[c][i] = 1;
+        }
+    });
+    // Incluir aqui os "make_choice" do estado inicial do futoshiki.
+    // Vai haver detalhes extra com as desigualdades though, o que é bastante chato
+    relation = makeChoice(relation, hint(1, 1, 4));
+    relation = makeChoice(relation, hint(3, 2, 2));
+    relation = makeChoice(relation, hint(4, 4, 3));
+    var result = algoX(relation);
+    if (result === undefined) {
+        console.log("Impossible");
     }
     else {
-        var cell = chooseNextEmptyCell(problem.state);
-        if (cell.length === 0) {
-            return solutions;
-        }
-        // console.log(possibleValuesForCell(problem.state, cell[0], cell[1]))
-        for (var _i = 0, _a = possibleValuesForCell(problem.state, cell[0], cell[1]); _i < _a.length; _i++) {
-            var value = _a[_i];
-            if (isValidPlacement(problem.state, problem.ineq, cell[0], cell[1], value)) {
-                var newState = __spreadArray([], problem.state.map(function (row) { return __spreadArray([], row, true); }), true); // Create a deep copy
-                newState[cell[0]][cell[1]] = value;
-                solveFutoshiki({ state: newState, ineq: problem.ineq }, solutions);
-            }
-        }
-        return solutions;
+        var output_1 = [];
+        // Assuming `result` is an object
+        result.forEach(function (r) {
+            var choice = choiceFromIndex(r);
+            output_1.push("R".concat(choice[0] + 1, "C").concat(choice[1] + 1, "#").concat(choice[2] + 1));
+        });
+        console.log(output_1);
     }
 }
-var startTime = performance.now(); // Record start time
-console.log(solveFutoshiki(sevenFutoshiki));
-var endTime = performance.now(); // Record end time
-var executionTime = endTime - startTime; // Calculate execution time
-console.log("Execution time: ".concat(executionTime, " milliseconds"));
+solve();
