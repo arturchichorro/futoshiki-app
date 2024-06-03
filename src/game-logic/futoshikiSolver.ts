@@ -4,7 +4,7 @@ interface RelationMap {
 
 type Position = { row: number, column: number };
 
-let size = 4;
+let size = 3;
 
 function indexFromChoice(row: number, column: number, digit: number): number {
     return (size ** 2) * row + size * column + digit;
@@ -44,14 +44,23 @@ function columnConstraint(column: number, digit: number): number[] {
 // Cada desigualdes vai criar mais do que uma coluna de constraints. Vai criar n-1 colunas
 function ineqConstraint(greater: Position, smaller: Position): number[][] {
     let ineqConstraints: number[][] = [];
+
     for (let d = size - 1; d > 0; d--) {
-        let constraints: number[] = [];
-        constraints.push(indexFromChoice(greater.row, greater.column, d));
-        for (let nd = d; nd < size; nd++) {
+        for (let nd = d - 1; nd > -1; nd--) {
+            let constraints: number[] = [];
+            constraints.push(indexFromChoice(greater.row, greater.column, d));
             constraints.push(indexFromChoice(smaller.row, smaller.column, nd));
+            ineqConstraints.push(constraints);
         }
-        ineqConstraints.push(constraints);
     }
+    // for (let d = size - 1; d > 0; d--) {
+    //     let constraints: number[] = [];
+    //     constraints.push(indexFromChoice(greater.row, greater.column, d));
+    //     for (let nd = d; nd < size - 1; nd++) {
+    //         constraints.push(indexFromChoice(smaller.row, smaller.column, nd));
+    //     }
+    //     ineqConstraints.push(constraints);
+    // }
     return ineqConstraints;
 }
 
@@ -85,10 +94,10 @@ function generateConstraints(): number[][] {
         }
     }
 
-    console.log(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
-    console.log(ineqConstraint({ row: 2, column: 2 }, { row: 1, column: 2 }));
-    constraints.concat(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
-    constraints.concat(ineqConstraint({ row: 3, column: 3 }, { row: 2, column: 3 }));
+    // console.log(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
+    console.log(ineqConstraint({ row: 0, column: 0 }, { row: 0, column: 1 }));
+    // constraints.concat(ineqConstraint({ row: 1, column: 2 }, { row: 0, column: 2 }));
+    constraints.concat(ineqConstraint({ row: 0, column: 0 }, { row: 0, column: 1 }));
     // TODO: inequality constraints
     // Para sudoku:
     // for (let i = 0; i < 3; i++) {
@@ -228,9 +237,9 @@ function solve() {
 
     // Incluir aqui os "make_choice" do estado inicial do futoshiki.
     // Vai haver detalhes extra com as desigualdades though, o que é bastante chato
-    relation = makeChoice(relation, hint(1, 1, 4));
-    relation = makeChoice(relation, hint(3, 2, 2));
-    relation = makeChoice(relation, hint(4, 4, 3));
+    // relation = makeChoice(relation, hint(1, 1, 4));
+    // relation = makeChoice(relation, hint(3, 2, 2));
+    // relation = makeChoice(relation, hint(4, 4, 3));
 
     let result = algoX(relation);
 
